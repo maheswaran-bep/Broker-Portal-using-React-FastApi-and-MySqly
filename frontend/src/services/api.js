@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 var api = axios.create({
-  baseURL: 'http://localhost:8000'
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000'
 })
 
 function createSubmission(data) {
@@ -32,4 +32,12 @@ function getSubmission(id) {
   return api.get('/submissions/' + id)
 }
 
-export { createSubmission, saveVehicle, savePlan, getFullSubmission, sendQuote,listSubmissions, getSubmission, }
+export {
+  createSubmission,
+  saveVehicle,
+  savePlan,
+  getFullSubmission,
+  sendQuote,
+  listSubmissions,
+  getSubmission,
+}

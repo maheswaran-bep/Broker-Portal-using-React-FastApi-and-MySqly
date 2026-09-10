@@ -1,0 +1,69 @@
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: broker-portal-mysql
+    restart: unless-stopped
+
+    environment:
+      MYSQL_ROOT_PASSWORD: broker_root_password
+      MYSQL_DATABASE: motor_broker
+      MYSQL_USER: broker_user
+      MYSQL_PASSWORD: broker_password
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-pbroker_root_password"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+
+  backend:
+    build:
+      context: ./backend
+
+    container_name: broker-portal-backend
+    restart: unless-stopped
+
+    environment:
+      DATABASE_URL: mysql+pymysql://broker_user:broker_password@mysql:3306/motor_broker
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    ports:
+      - "8005:8000"
+
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:8005
+
+    container_name: broker-portal-frontend
+    restart: unless-stopped
+
+    depends_on:
+      - backend
+
+    ports:
+      - "3001:80"
+
+
+volumes:
+  mysql_data:
